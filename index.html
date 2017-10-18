@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Arctic Network</title>
+<style>
+
+/*@import url(style.css);*/
+
+#circle circle {
+  fill: none;
+  pointer-events: all;
+}
+
+.group path {
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: .25px;
+}
+
+path.chord {
+  stroke: #000;
+  stroke-width: 0.4px;
+  fill-opacity: .65;
+  stroke-opacity: .8;
+}
+
+#circle:hover path.fade {
+  display: none;
+}
+
+#footer {
+      /*position: absolute;*/
+      top: 0;
+      z-index: 1;
+      display: block;
+      font-size: 24px;
+      font-weight: 300;
+      text-shadow: 0 1px 0 #fff;
+      top: 30px;
+      left: 30px;
+      text-align: center;
+    }
+
+    .hint {
+      /*position: absolute;*/
+      left: 0;
+      /*width: 500px;*/
+      margin-top: 5px;
+      font-size: 13.5px;
+      color: #121111;
+    }    
+
+</style>
+
+<!-- <p>Built with <a href="http://d3js.org/">d3.js</a>. -->
+<body>
+
+
+
+<div style="text-align:center"  id="footer" >
+        Arctic Interactions Network
+<!--     <div style="text-align:center"  class="hint">
+      <span>Interactive network diagram showing the effectiveness to reduce the effects of climate change on key marine ecosystems and ecosystem services. The effectivenesses shown are: the effectiveness of each climate solution to moderate warming, acidification, sea level rise and the effectiveness of each solution to reduce the combined effect of ocean warming, ocean acidification and sea-level rise on key ecosystems and ecosystems services. The thickness of the boxes around the solutions represents the combined scores for readiness and lead time until full implementation of each of the solutions. Scores range from 1 to 5: very low, low, moderate, high, and very high.  Placing the cursor on a link highlights its values.<span/>
+    </div> -->
+</div>
+
+<div style="text-align:center; position:relative;">
+<!-- <button type="button"  id='taxa' onclick="updatewarming()"  style= "background-color: hsl(119, 33%, 65%); border-color: rgba(5, 12, 7, 0.5); border-width: 3px;">Warming</button>
+<button type="button"  id='trophical' onclick="updatesealevel()" style= "background-color: hsl(119, 33%, 65%);border-color: hsl(119, 33%, 65%); border-width: 3px;" >Sea Level</button>
+<button type="button"  id='acid' onclick="updateacid()"  style= "background-color: hsl(119, 33%, 65%); border-color: hsl(119, 33%, 65%);  border-width: 3px;">Acidification</button>
+<button type="button"  id='cm' onclick="updatecm()"  style= "background-color: hsl(119, 33%, 65%); border-color: hsl(119, 33%, 65%);  border-width: 3px;">All 3 Combine</button> -->
+<button id='saveButton' style="margin-top: 50px;     margin-left: -60px; position: absolute; border: 1px solid; border-color: #245580;border-radius: 4px; font-size: 12px;height: 30px;" onclick="svgToPng()">Export Vis to PNG</button>
+ <br>
+<button type="button"  id='all' onclick="allchords()" style= "background-color: #ccc ;border-color: #333; border-width: 3px;" >Show All Effects </button>
+<button type="button"  id='pos' onclick="positivechords()" style= "background-color: hsl(119, 33%, 65%) ;border-color: #8bc48a ; border-width: 3px;" >Show Positive Effects</button>
+<button type="button"  id='neg' onclick="negativechords()" style= "background-color:  hsl(1, 97%, 77%);border-color: #fd8b8a; border-width: 3px;" >Show Negative Effects</button>
+<button type="button"  id='both' onclick="posnegchords()" style= "background-color:  #fffe33;border-color: rgba(193, 192, 23, 0.78); border-width: 3px;" >Show both Positive & Negative</button>
+</div>
+
+<script src="https://d3js.org/d3.v2.min.js?2.8.1"></script>
+<script src="https://rawgit.com/exupero/saveSvgAsPng/gh-pages/saveSvgAsPng.js"></script>
+  <script src="d3.layout.chord.sort.js"></script>
+  <script src="main.js"></script>
+  <script src="main2.js"></script>
+
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+  <!-- <link rel="stylesheet" href="bootstrap.min.css"> -->
+  <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></script>
+ -->
+<script>
+
+function svgToPng() {
+            saveSvgAsPng(d3.select('svg').node(), 'vis.png');
+}
+
+var width = $(window).width()-30,//1200,
+    height = $(window).height()-30,
+    outerRadius = Math.min(width, height) / 2 - 150,
+    innerRadius = outerRadius - 28;
+
+var formatPercent = d3.format(".3f");
+
+var arc = d3.svg.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+var layout = customChordLayout()// d3.layout.chord()
+    .padding(.05)
+    .sortSubgroups(d3.descending)
+    .sortChords(d3.ascending);
+
+var path = d3.svg.chord()
+    .radius(innerRadius-7);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .call(d3.behavior.zoom()
+      .scaleExtent([1, 8])
+      .on("zoom", function () {
+      //console.log(d3.event.translate + " "+ width / 2 + " , " + height / 2 );
+        svg.attr("transform", "translate(" + width / 2 + " , " + height / 2  + ")" + " scale(" + d3.event.scale + ")")
+      }) )
+    .append("g")
+    .attr("id", "circle")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+svg.append("circle")
+    .attr("r", outerRadius);
+  
+  
+  
+  
+var cities = ["X","Y","Z","Dummy","C","B","A","Dummy"];
+var scl = 1;
+///////////// Arctic interaction 
+// var matrixarctic =[
+// [0,1*scl,0,0.4*scl,0,0,0,0,-1*scl,0,0,1*scl,0,0,0,0,0,0,1*scl,0,0,0],
+// [1*scl,0,0,0,0,0,0,0,-1*scl,0,0,1*scl,0,0,0,0,0,0,0,0,0,0],
+// [0,0,0,0,0,0,0,0,-1*scl,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,0,0,0,0.30*scl,0,0,0,0.81*scl,0,0,1*scl,-0.4*scl,0,-2*scl,2*scl,0,0,1*scl,0,0,0],
+// [0,2*scl,0,0,0,0,0,0,-1*scl,0,0,3*scl,0,0,0,0,0,-1*scl,0,0,0,0],
+// [0,0,0,0,1*scl,0,0,1*scl,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,0,0,0,-1.03*scl,0,0,1*scl,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,0,0,0,1*scl,0,0,0,1.1*scl,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,-1*scl,-1*scl,0,1.1*scl,0,0,0,0,0,0,-3*scl,0,0,0,0,0,0,0,0,0,0],
+// [0,1*scl,2*scl,0,3*scl,0,0,0,1.1*scl,0,0,2*scl,0,0,0,0,0,0,0,0,0,0],
+// [-1*scl,0,-1*scl,0,-1*scl,0,0,-1.5*scl,2*scl,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [1.1*scl,0,-1*scl,3*scl,1*scl,0,0,0,-2*scl,2*scl,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,1*scl,0,-2*scl,2.01*scl,0,0.30*scl,0,0.81*scl,0.81*scl,0,-2*scl,0,0,2*scl,-2*scl,0,0,0,0,0,-0.4*scl],
+// [0,-1*scl,0,0,0.81*scl,0,1*scl,0,0,-2*scl,0,0,0,0,-3*scl,0,0,0,0,0,0,0],
+// [0,0,0,0,-1*scl,0.30*scl,0.4*scl,0,0,0,2.5*scl,1.5*scl,-1.5*scl,2.5*scl,0,0,-1*scl,0,0,0,0,-1.5*scl],
+// [0,0,0,0,0,1.5*scl,0.30*scl,0,0,0,0,2*scl,0.30*scl,0.4*scl,3*scl,0,1*scl,0,0,0,0,0.30*scl],
+// [0,0,0,0,0.30*scl,0.30*scl,0.30*scl,0.30*scl,0.81*scl,0,0,2.01*scl,1*scl,0,3*scl,0,0,-1.5*scl,0,0,-2*scl,-1.5*scl],
+// [0,0,0,0,0,0,0,0,-2*scl,0,0,0,0,0,0,0,0,0,1*scl,2.02*scl,0,0],
+// [-1*scl,-1*scl,-1*scl,0,0,0,0,0,-2*scl,0,0,0,0,0,0,0,1*scl,0.81*scl,0,0.30*scl,0,-1*scl],
+// [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2*scl,2*scl,1*scl,0,2*scl,1*scl],
+// [0,0,0,0,0,0.30*scl,0,0.30*scl,-2*scl,0,0,0,0,0,0,0,3*scl,0.81*scl,0,2.02*scl,0,-1*scl],
+// [0.30*scl,1*scl,1*scl,1*scl,0.4*scl,0.4*scl,0,0.4*scl,0,0,0,0,0,0,0,0,0,1*scl,0,0.81*scl,1*scl,0]
+// ]
+
+// var matrixarctic_pos =[
+// [0,1*scl,0,0.4*scl,0,0,0,0,1*scl,0,0,1*scl,0,0,0,0,0,0,1*scl,0,0,0],
+// [1*scl,0,0,0,0,0,0,0,1*scl,0,0,1*scl,0,0,0,0,0,0,0,0,0,0],
+// [0,0,0,0,0,0,0,0,1*scl,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,0,0,0,0.30*scl,0,0,0,0.81*scl,0,0,1*scl,0.4*scl,0,2*scl,2*scl,0,0,1*scl,0,0,0],
+// [0,2*scl,0,0,0,0,0,0,1*scl,0,0,3*scl,0,0,0,0,0,1*scl,0,0,0,0],
+// [0,0,0,0,1*scl,0,0,1*scl,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,0,0,0,1.03*scl,0,0,1*scl,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,0,0,0,1*scl,0,0,0,1.1*scl,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,1*scl,1*scl,0,1.1*scl,0,0,0,0,0,0,3*scl,0,0,0,0,0,0,0,0,0,0],
+// [0,1*scl,2*scl,0*scl,3*scl,0,0,0,1.1*scl,0,0,2*scl,0,0,0,0,0,0,0,0,0,0],
+// [1*scl,0,1*scl,0,1*scl,0,0,1.5*scl,2*scl,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// [1.1*scl,0,1*scl,3*scl,1*scl,0,0,0,2*scl,2*scl,0,0,0,0,0,0,0,0,0,0,0,0],
+// [0,1*scl,0,-2*scl,2.01*scl,0,0.30*scl,0,0.81*scl,0.81*scl,0,2*scl,0,0,2*scl,2*scl,0,0,0,0,0,0.4*scl],
+// [0,1*scl,0,0,0.81*scl,0,1*scl,0,0,2*scl,0,0,0,0,3*scl,0,0,0,0,0,0,0],
+// [0,0,0,0,1*scl,0.30*scl,0.4*scl,0,0,0,2.5*scl,1.5*scl,1.5*scl,2.5*scl,0,0,1*scl,0,0,0,0,1.5*scl],
+// [0,0,0,0,0,1.5*scl,0.30*scl,0,0,0,0,2*scl,0.30*scl,0.4*scl,3*scl,0,1*scl,0,0,0,0,0.30*scl],
+// [0,0,0,0,0.30*scl,0.30*scl,0.30*scl,0.30*scl,0.81*scl,0,0,2.01*scl,1*scl,0,3*scl,0,0,1.5*scl,0,0,2*scl,1.5*scl],
+// [0,0,0,0,0,0,0,0,2*scl,0,0,0,0,0,0,0,0,0,1*scl,2.02*scl,0,0],
+// [1*scl,1*scl,1*scl,0,0,0,0,0,2*scl,0,0,0,0,0,0,0,1*scl,0.81*scl,0,0.30*scl,0,1*scl],
+// [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2*scl,2*scl,1*scl,0,2*scl,1*scl],
+// [0,0,0,0,0,0.30*scl,0,0.30*scl,2*scl,0,0,0,0,0,0,0,3*scl,0.81*scl,0,2.02*scl,0,1*scl],
+// [0.30*scl,1*scl,1*scl,1*scl,0.4*scl,0.4*scl,0,0.4*scl,0,0,0,0,0,0,0,0,0,1*scl,0,0.81*scl,1*scl,0]
+// ]
+
+var matrixarctic =[
+[0,1,0,0.4,0,0,0,0,-1,0,0,1,0,0,0,0,0,0,1,0,0,0],
+[1,0,0,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0.30,0,0,0,0.81,0,0,1,-0.4,0,-2,2,0,0,1,0,0,0],
+[0,2,0,0,0,0,0,0,-1,0,0,3,0,0,0,0,0,-1,0,0,0,0],
+[0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,-1.03,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,1,0,0,0,1.1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,-1,-1,0,1.1,0,0,0,0,0,0,-3,0,0,0,0,0,0,0,0,0,0],
+[0,1,2,0,3,0,0,0,1.1,0,0,2,0,0,0,0,0,0,0,0,0,0],
+[-1,0,-1,0,-1,0,0,-1.5,2,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[1.1,0,-1,3,1,0,0,0,-2,2,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,1,0,-2,2.01,0,0.30,0,0.81,0.81,0,-2,0,0,2,-2,0,0,0,0,0,-0.4],
+[0,-1,0,0,0.81,0,1,0,0,-2,0,0,0,0,-3,0,0,0,0,0,0,0],
+[0,0,0,0,-1,0.30,0.4,0,0,0,2.5,1.5,-1.5,2.5,0,0,-1,0,0,0,0,-1.5],
+[0,0,0,0,0,1.5,0.30,0,0,0,0,2,0.30,0.4,3,0,1,0,0,0,0,0.30],
+[0,0,0,0,0.30,0.30,0.30,0.30,0.81,0,0,2.01,1,0,3,0,0,-1.5,0,0,-2,-1.5],
+[0,0,0,0,0,0,0,0,-2,0,0,0,0,0,0,0,0,0,1,2.02,0,0],
+[-1,-1,-1,0,0,0,0,0,-2,0,0,0,0,0,0,0,1,0.81,0,0.30,0,-1],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,1,0,2,1],
+[0,0,0,0,0,0.30,0,0.30,-2,0,0,0,0,0,0,0,3,0.81,0,2.02,0,-1],
+[0.30,1,1,1,0.4,0.4,0,0.4,0,0,0,0,0,0,0,0,0,1,0,0.81,1,0]
+]
+
+var matrixarctic_pos =[
+[0,1,0,0.4,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0],
+[1,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0.30,0,0,0,0.81,0,0,1,0.4,0,2,2,0,0,1,0,0,0],
+[0,2,0,0,0,0,0,0,1,0,0,3,0,0,0,0,0,1,0,0,0,0],
+[0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,1.03,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,1,0,0,0,1.1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,1,1,0,1.1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0],
+[0,1,2,0,3,0,0,0,1.1,0,0,2,0,0,0,0,0,0,0,0,0,0],
+[1,0,1,0,1,0,0,1.5,2,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[1.1,0,1,3,1,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,1,0,2,2.01,0,0.30,0,0.81,0.81,0,2,0,0,2,2,0,0,0,0,0,0.4],
+[0,1,0,0,0.81,0,1,0,0,2,0,0,0,0,3,0,0,0,0,0,0,0],
+[0,0,0,0,1,0.30,0.4,0,0,0,2.5,1.5,1.5,2.5,0,0,1,0,0,0,0,1.5],
+[0,0,0,0,0,1.5,0.30,0,0,0,0,2,0.30,0.4,3,0,1,0,0,0,0,0.30],
+[0,0,0,0,0.30,0.30,0.30,0.30,0.81,0,0,2.01,1,0,3,0,0,1.5,0,0,2,1.5],
+[0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,1,2.02,0,0],
+[1,1,1,0,0,0,0,0,2,0,0,0,0,0,0,0,1,0.81,0,0.30,0,1],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,1,0,2,1],
+[0,0,0,0,0,0.30,0,0.30,2,0,0,0,0,0,0,0,3,0.81,0,2.02,0,1],
+[0.30,1,1,1,0.4,0.4,0,0.4,0,0,0,0,0,0,0,0,0,1,0,0.81,1,0]
+]
+
+//warming();
+generatechord(matrixarctic_pos);
+//generatechordcm(matrixcm);
+var taxaortroph = true;  // true for taxa false for trophical
+var arrp = [0.30,0.81,1.1,2.01,2.02,-1.03,-1.5];//.map(function(x) { return x * scl; });   // these positive and negative arrays contains numbers we have to remove from the pos and neg chords as they are for both pos and neg
+var arrn = [0.30,0.81,1.1,2.01,2.02,-1.03,1.5,2.5];//.map(function(x) { return x * scl; }); // tricky case is to handle one of these number with 0
+ var arrpn = [0.30,0.81,1.1,2.01,2.02,-1.03];//.map(function(x) { return x * scl; }); // numbers that chors have for both pos and neg
+
+
+var showchords=1; //1 for all. 2 for pos, 3 for neg
+function allchords(){
+  showchords=1;
+  $('#pos')["0"].style.borderColor= "#8bc48a";
+  $('#neg')["0"].style.borderColor= "#fd8b8a"; 
+  $('#both')["0"].style.borderColor= "rgba(193, 192, 23, 0.78)"; 
+
+  $('#all')["0"].style.borderColor= "#333"; 
+  svg.selectAll(".chord")
+  .style("opacity", function(d){
+    return 1;
+  })
+}
+
+function positivechords(){
+  showchords=2;
+  $('#all')["0"].style.borderColor= "#ccc";
+  $('#neg')["0"].style.borderColor= "#fd8b8a"; 
+  $('#both')["0"].style.borderColor= "rgba(193, 192, 23, 0.78)"; 
+
+  $('#pos')["0"].style.borderColor= "#333"; 
+  
+  svg.selectAll(".chord").style("opacity", function(d){
+        if(matrixarctic[d.source.index][d.target.index] <= 0 && matrixarctic[d.target.index][d.source.index] <= 0) return 0;
+        else {
+          if (!(arrp.includes(matrixarctic[d.source.index][d.target.index]) && arrp.includes(matrixarctic[d.target.index][d.source.index])) ) {
+           if((matrixarctic[d.source.index][d.target.index]==0 && arrp.includes(matrixarctic[d.target.index][d.source.index])) ) return 0;
+           else if((matrixarctic[d.target.index][d.source.index]==0 && arrp.includes(matrixarctic[d.source.index][d.target.index])) ) return 0;
+           else return 1;
+          }
+          else return 0;
+        }
+  })
+}
+
+function negativechords(){
+  showchords=3;
+  $('#all')["0"].style.borderColor= "#ccc";
+  $('#pos')["0"].style.borderColor= "#8bc48a"; 
+  $('#both')["0"].style.borderColor= "rgba(193, 192, 23, 0.78)"; 
+
+  $('#neg')["0"].style.borderColor= "#333"; 
+  
+  svg.selectAll(".chord")
+  .style("opacity", function(d){
+        if(matrixarctic[d.source.index][d.target.index] >= 0 && matrixarctic[d.target.index][d.source.index] >= 0) return 0;
+        else {
+          if (!(arrn.includes(matrixarctic[d.source.index][d.target.index]) && arrn.includes(matrixarctic[d.target.index][d.source.index])) ) {
+            if((matrixarctic[d.source.index][d.target.index]==0 && arrn.includes(matrixarctic[d.target.index][d.source.index])) ) return 0;
+            else if((matrixarctic[d.target.index][d.source.index]==0 && arrn.includes(matrixarctic[d.source.index][d.target.index])) ) return 0;
+            else return 1;
+          }
+          else return 0;
+        }
+  })
+}
+
+function posnegchords(){
+  showchords=4;
+  $('#all')["0"].style.borderColor= "#ccc";
+  $('#pos')["0"].style.borderColor= "#8bc48a"; 
+  $('#neg')["0"].style.borderColor= "#fd8b8a"; 
+
+  $('#both')["0"].style.borderColor= "#333"; 
+ 
+  svg.selectAll(".chord")
+  .style("opacity", function(d){
+        if(arrpn.includes(matrixarctic[d.source.index][d.target.index]) || arrpn.includes(matrixarctic[d.target.index][d.source.index]) ) return 1;
+        else return 0;
+  })
+}
+
+</script>
+
+<div id="foot2" <ul class="footer2" style = "margin: -80px 30px 0 0;border-top: 0px dotted #aaa; padding: 0.5px 0 0 0;  text-align: right;  clear: both;">
+        <li style="display: inline-block; font-size: small;"><a href='https://kvl.kaust.edu.sa/Pages/Home.aspx'>Created By KAUST Visualization Core Lab, October 2017</a></li>
+        <!-- <li style="display: inline-block;"><aside style ="margin-top: -15px;"> June, 2017.
+        <a href="#" rel="author">Sohaib Ghani</a> </aside></li> -->
+        </ul>             
+</div>
+
+</body>
