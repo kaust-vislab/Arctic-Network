@@ -49,6 +49,7 @@ path.chord {
       color: #121111;
     }    
 
+.pln{color:#000}@media screen{.str{color:#080}.kwd{color:#008}.com{color:#800}.typ{color:#606}.lit{color:#066}.pun,.opn,.clo{color:#660}.tag{color:#008}.atn{color:#606}.atv{color:#080}.dec,.var{color:#606}.fun{color:red}}@media print,projection{.str{color:#060}.kwd{color:#006;font-weight:bold}.com{color:#600;font-style:italic}.typ{color:#404;font-weight:bold}.lit{color:#044}.pun,.opn,.clo{color:#440}.tag{color:#006;font-weight:bold}.atn{color:#404}.atv{color:#060}}pre.prettyprint{padding:2px;border:1px solid #888}ol.linenums{margin-top:0;margin-bottom:0}li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8{list-style-type:none}li.L1,li.L3,li.L5,li.L7,li.L9{background:#eee}
 </style>
 
 <!-- <p>Built with <a href="http://d3js.org/">d3.js</a>. -->
@@ -74,7 +75,16 @@ path.chord {
 <button type="button"  id='pos' onclick="positivechords()" style= "background-color: hsl(119, 33%, 65%) ;border-color: #8bc48a ; border-width: 3px;" >Show Positive Effects</button>
 <button type="button"  id='neg' onclick="negativechords()" style= "background-color:  hsl(1, 97%, 77%);border-color: #fd8b8a; border-width: 3px;" >Show Negative Effects</button>
 <button type="button"  id='both' onclick="posnegchords()" style= "background-color:  #fffe33;border-color: rgba(193, 192, 23, 0.78); border-width: 3px;" >Show both Positive & Negative</button>
+
+<form id="svgform" method="post" action="download.pl">
+ <input type="hidden" id="output_format" name="output_format" value="">
+ <input type="hidden" id="data" name="data" value="">
+</form>
+
 </div>
+
+
+
 
 <script src="https://d3js.org/d3.v2.min.js?2.8.1"></script>
 <script src="https://rawgit.com/exupero/saveSvgAsPng/gh-pages/saveSvgAsPng.js"></script>
@@ -86,13 +96,33 @@ path.chord {
   src="https://code.jquery.com/jquery-3.2.1.min.js"
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
   crossorigin="anonymous"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/188.0.0/prettify.js"></script>
+  <script src="vkbeautify.0.99.00.beta.js"></script>
   <!-- <link rel="stylesheet" href="bootstrap.min.css"> -->
   <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></script>
  -->
 <script>
 
+function submit_download_form(output_format)
+{
+  // Get the d3js SVG element
+ // var tmp = document.getElementById("body");
+  //var svg = tmp.getElementsByTagName("svg")[0];
+  var svg= d3.select('svg').node()
+  // Extract the data as SVG text string
+  var svg_xml = (new XMLSerializer).serializeToString(svg);
+
+  // Submit the <FORM> to the server.
+  // The result will be an attachment file to download.
+  var form = document.getElementById("svgform");
+  form['output_format'].value = output_format;
+  form['data'].value = svg_xml ;
+  form.submit();
+}
+
 function svgToPng() {
-            saveSvgAsPng(d3.select('svg').node(), 'vis.png');
+            //saveSvgAsPng(d3.select('svg').node(), 'vis.png');
+            submit_download_form("svg");
 }
 
 var width = $(window).width()-30,//1200,
