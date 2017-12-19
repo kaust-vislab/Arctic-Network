@@ -76,10 +76,7 @@ path.chord {
 <button type="button"  id='neg' onclick="negativechords()" style= "background-color:  hsl(1, 97%, 77%);border-color: #fd8b8a; border-width: 3px;" >Show Negative Effects</button>
 <button type="button"  id='both' onclick="posnegchords()" style= "background-color:  #fffe33;border-color: rgba(193, 192, 23, 0.78); border-width: 3px;" >Show both Positive & Negative</button>
 
-<form id="svgform" method="post" action="download.pl">
- <input type="hidden" id="output_format" name="output_format" value="">
- <input type="hidden" id="data" name="data" value="">
-</form>
+
 
 </div>
 
@@ -96,33 +93,17 @@ path.chord {
   src="https://code.jquery.com/jquery-3.2.1.min.js"
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
   crossorigin="anonymous"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/188.0.0/prettify.js"></script>
-  <script src="vkbeautify.0.99.00.beta.js"></script>
+ <!--  <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/188.0.0/prettify.js"></script>
+  <script src="vkbeautify.0.99.00.beta.js"></script> -->
   <!-- <link rel="stylesheet" href="bootstrap.min.css"> -->
   <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></script>
  -->
 <script>
 
-function submit_download_form(output_format)
-{
-  // Get the d3js SVG element
- // var tmp = document.getElementById("body");
-  //var svg = tmp.getElementsByTagName("svg")[0];
-  var svg= d3.select('svg').node()
-  // Extract the data as SVG text string
-  var svg_xml = (new XMLSerializer).serializeToString(svg);
 
-  // Submit the <FORM> to the server.
-  // The result will be an attachment file to download.
-  var form = document.getElementById("svgform");
-  form['output_format'].value = output_format;
-  form['data'].value = svg_xml ;
-  form.submit();
-}
 
 function svgToPng() {
-            //saveSvgAsPng(d3.select('svg').node(), 'vis.png');
-            submit_download_form("svg");
+            saveSvgAsPng(d3.select('svg').node(), 'vis.png',{scale:3.0});
 }
 
 var width = $(window).width()-30,//1200,
