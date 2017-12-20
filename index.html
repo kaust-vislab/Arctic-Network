@@ -68,7 +68,8 @@ path.chord {
 <button type="button"  id='trophical' onclick="updatesealevel()" style= "background-color: hsl(119, 33%, 65%);border-color: hsl(119, 33%, 65%); border-width: 3px;" >Sea Level</button>
 <button type="button"  id='acid' onclick="updateacid()"  style= "background-color: hsl(119, 33%, 65%); border-color: hsl(119, 33%, 65%);  border-width: 3px;">Acidification</button>
 <button type="button"  id='cm' onclick="updatecm()"  style= "background-color: hsl(119, 33%, 65%); border-color: hsl(119, 33%, 65%);  border-width: 3px;">All 3 Combine</button> -->
-<button id='saveButton' style="margin-top: 50px;     margin-left: -60px; position: absolute; border: 1px solid; border-color: #245580;border-radius: 4px; font-size: 12px;height: 30px;" onclick="svgToPng()">Export Vis to PNG</button>
+<button id='saveButton' style="margin-top: 50px;     margin-left: -130px; position: absolute; border: 1px solid; border-color: #245580;border-radius: 4px; font-size: 12px;height: 30px;" onclick="svgToPng()">Export Vis to PNG</button>
+<button id='savesvgButton' style="margin-top: 50px;     margin-left: 0px; position: absolute; border: 1px solid; border-color: #245580;border-radius: 4px; font-size: 12px;height: 30px;" onclick="writeDownloadLink()">Export Vis to SVG</button>
  <br>
 <button type="button"  id='all' onclick="allchords()" style= "background-color: #ccc ;border-color: #333; border-width: 3px;" >Show All Effects </button>
 <button type="button"  id='pos' onclick="positivechords()" style= "background-color: hsl(119, 33%, 65%) ;border-color: #8bc48a ; border-width: 3px;" >Show Positive Effects</button>
@@ -84,6 +85,8 @@ path.chord {
   <script src="d3.layout.chord.sort.js"></script>
   <script src="main.js"></script>
   <script src="main2.js"></script>
+  <script src="FileSaver.js"></script>
+    <script src="d3-save-svg.min.js"></script>
 
 <script
   src="https://code.jquery.com/jquery-3.2.1.min.js"
@@ -96,10 +99,33 @@ path.chord {
  -->
 <script>
 
+function writeDownloadLink(){
+    // try {
+    //     var isFileSaverSupported = !!new Blob();
+    // } catch (e) {
+    //     alert("blob not supported");
+    // }
 
+    // var html = d3.select("svg")
+    //     .attr("title", "test2")
+    //     .attr("version", 1.1)
+    //     .attr("xmlns", "http://www.w3.org/2000/svg")
+    //     //.node().innerHTML;
+    //     ["0"]["0"].outerHTML;
+    //     console.log(d3.select("svg"));
+
+    // var blob = new Blob([html], {type: "image/svg+xml"});
+    // saveAs(blob, "myProfile.svg");
+
+     var config = {
+        filename: 'vis',
+      }
+      d3_save_svg.save(d3.select('svg').node(), config);
+};
 
 function svgToPng() {
-            saveSvgAsPng(d3.select('svg').node(), 'vis.png',{scale:3.0});
+           saveSvgAsPng(d3.select('svg').node(), 'vis.png',{scale:3.0});
+            //writeDownloadLink();
 }
 
 var width = $(window).width()-30,//1200,
