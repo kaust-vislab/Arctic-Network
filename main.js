@@ -157,16 +157,28 @@ grads.append("stop")
         .on("mouseout", chordmouseout);
 
     //Add an elaborate mouseover title for each chord.
-    chord.append("title").text(function(d) {
+    // chord.append("title").text(function(d) {
+    //   var temp=1,temp2=1;
+    //   if(matrix2[d.source.index][d.target.index] < 0) temp=-1;
+    //   if(matrix2[d.target.index][d.source.index] < 0) temp2=-1;
+    //   return cities[d.source.index].name
+    //       + " → " + cities[d.target.index].name
+    //       + ": " + decode((d.source.value*temp))
+    //       + "\n" + cities[d.target.index].name
+    //       + " → " + cities[d.source.index].name
+    //       + ": " + decode((d.target.value*temp2));
+    // });
+
+     chord.append("title").text(function(d) {
       var temp=1,temp2=1;
       if(matrix2[d.source.index][d.target.index] < 0) temp=-1;
       if(matrix2[d.target.index][d.source.index] < 0) temp2=-1;
       return cities[d.source.index].name
           + " → " + cities[d.target.index].name
-          + ": " + decode((d.source.value*temp))
+          + ": " +  decode((d.target.value*temp2))
           + "\n" + cities[d.target.index].name
           + " → " + cities[d.source.index].name
-          + ": " + decode((d.target.value*temp2));
+          + ": " + decode((d.source.value*temp));
     });
 
    function mouseover(d, i) {
@@ -418,7 +430,7 @@ function decode(inp){
   else if (inp == 0.4* scl) return "(+)";
   else if (inp == -0.4* scl) return "(-)";
   else if (inp == 0.30* scl) return "(0)";
-  else if (inp == 0.81* scl) return "(-+)";
+  else if (inp == 0.81* scl) return "(+-)";
   else if (inp == 1.1* scl) return "+-";
   else if (inp == 2.01* scl) return "++--";
   else if (inp == 2.02* scl) return "(++--)";
